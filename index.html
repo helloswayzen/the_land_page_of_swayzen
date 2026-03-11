@@ -581,14 +581,14 @@ input::placeholder { color: hsl(var(--text-muted)); }
         <input type="text" name="website" style="display:none" tabindex="-1" autocomplete="off" />
         <div class="email-row">
           <input type="email" id="hero-email-input" placeholder="Enter your email address" required autocomplete="email"/>
-          <button type="button" onclick="document.getElementById('hero-turnstile').style.display='block'">
+          <button type="button" onclick="showTurnstile('hero-turnstile','hero-email-input','hero-email-input-mobile')">
             <span>Be First to Know</span>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
           </button>
         </div>
         <div class="email-stack">
           <input type="email" id="hero-email-input-mobile" placeholder="Enter your email address" required autocomplete="email"/>
-          <button type="button" onclick="document.getElementById('hero-turnstile').style.display='block'">
+          <button type="button" onclick="showTurnstile('hero-turnstile','hero-email-input','hero-email-input-mobile')">
             <span>Be First to Know</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
           </button>
@@ -726,14 +726,14 @@ input::placeholder { color: hsl(var(--text-muted)); }
         <input type="text" name="website" style="display:none" tabindex="-1" autocomplete="off" />
         <div class="email-row">
           <input type="email" id="footer-email-input" placeholder="Enter your email address" required autocomplete="email"/>
-          <button type="button" onclick="document.getElementById('footer-turnstile').style.display='block'">
+          <button type="button" onclick="showTurnstile('footer-turnstile','footer-email-input','footer-email-input-mobile')">
             <span>Be First to Know</span>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
           </button>
         </div>
         <div class="email-stack">
           <input type="email" id="footer-email-input-mobile" placeholder="Enter your email address" required autocomplete="email"/>
-          <button type="button" onclick="document.getElementById('footer-turnstile').style.display='block'">
+          <button type="button" onclick="showTurnstile('footer-turnstile','footer-email-input','footer-email-input-mobile')">
             <span>Be First to Know</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
           </button>
@@ -814,6 +814,24 @@ function scrollToEmail() {
 
 let submitted = false;
 
+function showTurnstile(turnstileId, inputId, mobileInputId) {
+  const email = document.getElementById(inputId)?.value
+             || document.getElementById(mobileInputId)?.value;
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    const widget = document.getElementById(turnstileId);
+    const form = widget.closest('form');
+    const existing = form.querySelector('.inline-error');
+    if (existing) existing.remove();
+    const msg = document.createElement('p');
+    msg.className = 'inline-error';
+    msg.style.cssText = 'font-size:12px;color:#C42B2B;margin-top:8px;text-align:center;';
+    msg.textContent = 'Please enter a valid email address.';
+    widget.before(msg);
+    return;
+  }
+  document.getElementById(turnstileId).style.display = 'block';
+}
+  
 async function handleSubmit(e, formId) {
   e.preventDefault();
   if (submitted) return false;
@@ -832,8 +850,17 @@ async function handleSubmit(e, formId) {
   let email = '';
   inputs.forEach(inp => { if (inp.value) email = inp.value; });
 
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return false;
-
+if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  turnstile.reset();
+  const existingErr = form.querySelector('.inline-error');
+  if (existingErr) existingErr.remove();
+  const msg = document.createElement('p');
+  msg.className = 'inline-error';
+  msg.style.cssText = 'font-size:12px;color:#C42B2B;margin-top:8px;text-align:center;';
+  msg.textContent = 'Please enter a valid email address.';
+  form.appendChild(msg);
+  return false;
+}
   // Clear any previous error message
   const existingError = form.querySelector('.inline-error');
   if (existingError) existingError.remove();
@@ -850,7 +877,8 @@ async function handleSubmit(e, formId) {
       .insert({ Email: email });
 
   if (error) {
-      btns.forEach(btn => {
+    btns.forEach(btn => {
+        turnstile.reset();
         btn.disabled = false;
         btn.innerHTML = '<span>Be First to Know</span> <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>';
 
@@ -899,12 +927,13 @@ document.querySelectorAll('input[type="email"]').forEach(input => {
 });
 
 function onHeroVerified(token) {
+
   handleSubmit({ preventDefault: () => {}, target: document.querySelector('#hero-email-form form') }, 'hero');
 }
+
 function onFooterVerified(token) {
   handleSubmit({ preventDefault: () => {}, target: document.querySelector('#footer-email-form form') }, 'footer');
 }
-
 </script>
 </body>
 </html>
