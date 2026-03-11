@@ -861,7 +861,7 @@ if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
   form.appendChild(msg);
   return false;
 }
-  // Clear any previous error message
+
   const existingError = form.querySelector('.inline-error');
   if (existingError) existingError.remove();
 
@@ -897,7 +897,6 @@ if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
 
 
 
-  // Only reaches here after successful DB insert
   submitted = true;
   document.querySelectorAll('#hero-email-form form, #footer-email-form form').forEach(f => f.style.display = 'none');
   document.querySelectorAll('.email-success').forEach(s => s.classList.add('active'));
@@ -937,3 +936,4 @@ function onFooterVerified(token) {
 </script>
 </body>
 </html>
+
